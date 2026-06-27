@@ -17,11 +17,10 @@ export default function Login({ onLogin }) {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [showDemo, setShowDemo] = useState(true);
+  const [statusMessage, setStatusMessage] = useState('');
 
   const resetExtraFields = () => {
     setName('');
-    setConfirmPassword('');
-    setDepartment('');
     setRole('Employee');
     setError('');
   };
@@ -30,6 +29,7 @@ export default function Login({ onLogin }) {
     setMode(nextMode);
     setPassword('');
     resetExtraFields();
+    setStatusMessage("");
   };
 
   const handleSubmit = async (e) => {
@@ -43,39 +43,56 @@ export default function Login({ onLogin }) {
 
     setSubmitting(true);
 
+    setStatusMessage(
+      mode === "login"
+        ? "Signing in..."
+        : "Creating your account..."
+    );
+
+    const wakingTimer = setTimeout(() => {
+      setStatusMessage(
+        "Our backend is hosted on Render's free tier and may be waking up. This usually takes 30–60 seconds. Please don't refresh the page."
+      );
+    }, 4000);
+
     try {
       if (mode === "login") {
         const data = await loginUser({
-            email,
-            password,
+          email,
+          password,
         });
 
         localStorage.setItem("token", data.token);
-
         onLogin(data.user);
 
       } else {
+        await registerUser({
+          name,
+          email,
+          password,
+          role,
+          department,
+        });
 
-          await registerUser({
-              name,
-              email,
-              password,
-              role,
-              department,
-          });
+      setStatusMessage("✅ Account created successfully! Please sign in.");
 
-          alert("Registration Successful!");
-
+        setTimeout(() => {
+          setPassword("");
           switchMode("login");
+          setStatusMessage("");
+        }, 2000);
       }
 
     } catch (err) {
       setError(
         err.response?.data?.message ||
-        (mode === 'login' ? "Login failed" : "Registration failed")
+        (mode === "login"
+          ? "Login failed"
+          : "Registration failed")
       );
     } finally {
-      setSubmitting(false);
+        clearTimeout(wakingTimer);
+        setSubmitting(false);
     }
   };
 
@@ -149,6 +166,31 @@ export default function Login({ onLogin }) {
         {/* Login Form */}
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
+            {statusMessage && (
+              <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg text-sm flex items-start gap-2">
+                <svg
+                  className="animate-spin h-4 w-4 mt-0.5 flex-shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z"
+                  />
+                </svg>
+
+                <span>{statusMessage}</span>
+              </div>
+            )}
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
                 {error}
@@ -246,6 +288,7 @@ export default function Login({ onLogin }) {
                       onChange={(e) => setDepartment(e.target.value)}
                       placeholder="e.g. Sales, Finance, IT"
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
                     />
                   </div>
                 </div>
@@ -287,7 +330,8 @@ export default function Login({ onLogin }) {
               <>
                 Don&apos;t have an account?{' '}
                 <button
-                  onClick={() => switchMode('register')}
+                  disabled={submitting}
+                  onClick={() => switchMode("register")}
                   className="text-blue-600 hover:text-blue-800 font-medium"
                 >
                   Create one
@@ -297,6 +341,7 @@ export default function Login({ onLogin }) {
               <>
                 Already have an account?{' '}
                 <button
+                  disabled={submitting}
                   onClick={() => switchMode('login')}
                   className="text-blue-600 hover:text-blue-800 font-medium"
                 >
