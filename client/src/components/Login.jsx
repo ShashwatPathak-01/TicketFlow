@@ -1,33 +1,81 @@
 import { useState } from 'react';
-import { LockClosedIcon, UserIcon, KeyIcon } from '@heroicons/react/24/outline';
-import { loginUser } from "../api/authApi";
+import { LockClosedIcon, UserIcon, KeyIcon, EnvelopeIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
+import { loginUser, registerUser } from "../api/authApi";
 
 export default function Login({ onLogin }) {
+  const [mode, setMode] = useState('login'); // 'login' | 'register'
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  // Register-only fields
+  const [name, setName] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [department, setDepartment] = useState('');
+  const [role, setRole] = useState('Employee');
+
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [showDemo, setShowDemo] = useState(true);
+
+  const resetExtraFields = () => {
+    setName('');
+    setConfirmPassword('');
+    setDepartment('');
+    setRole('Employee');
+    setError('');
+  };
+
+  const switchMode = (nextMode) => {
+    setMode(nextMode);
+    setPassword('');
+    resetExtraFields();
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
+    if (mode === 'register' && password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    setSubmitting(true);
+
     try {
-      const data = await loginUser({
-        email,
-        password,
-    });
-    console.log(data);
+      if (mode === "login") {
+        const data = await loginUser({
+            email,
+            password,
+        });
 
-      localStorage.setItem("token", data.token);
-      console.log(localStorage.getItem("token"));
+        localStorage.setItem("token", data.token);
 
-      onLogin(data.user);
+        onLogin(data.user);
+
+      } else {
+
+          await registerUser({
+              name,
+              email,
+              password,
+              role,
+              department,
+          });
+
+          alert("Registration Successful!");
+
+          switchMode("login");
+      }
 
     } catch (err) {
       setError(
-        err.response?.data?.message || "Login failed"
+        err.response?.data?.message ||
+        (mode === 'login' ? "Login failed" : "Registration failed")
       );
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -40,11 +88,15 @@ export default function Login({ onLogin }) {
             <LockClosedIcon className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900">Corporate Ticket System</h1>
-          <p className="text-gray-600 mt-2">Sign in to manage your support tickets</p>
+          <p className="text-gray-600 mt-2">
+            {mode === 'login'
+              ? 'Sign in to manage your support tickets'
+              : 'Create an account to get started'}
+          </p>
         </div>
 
         {/* Demo Credentials */}
-        {showDemo && (
+        {mode === 'login' && showDemo && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
             <div className="flex items-start justify-between mb-3">
               <h3 className="text-sm font-semibold text-blue-900">Demo Credentials</h3>
@@ -103,12 +155,32 @@ export default function Login({ onLogin }) {
               </div>
             )}
 
+            {mode === 'register' && (
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                  Full Name
+                </label>
+                <div className="relative">
+                  <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    id="name"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Enter your full name"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+              </div>
+            )}
+
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                 Email
               </label>
               <div className="relative">
-                <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <EnvelopeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   id="email"
                   type="email"
@@ -133,22 +205,108 @@ export default function Login({ onLogin }) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
+                  minLength={mode === 'register' ? 6 : undefined}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
               </div>
             </div>
 
+            {mode === 'register' && (
+              <>
+                <div>
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <KeyIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
+                      id="confirmPassword"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Re-enter your password"
+                      minLength={6}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-2">
+                    Department
+                  </label>
+                  <div className="relative">
+                    <BuildingOfficeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
+                      id="department"
+                      type="text"
+                      value={department}
+                      onChange={(e) => setDepartment(e.target.value)}
+                      placeholder="e.g. Sales, Finance, IT"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
+                    Account Type
+                  </label>
+                  <select
+                    id="role"
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="Admin">Admin</option>
+                    <option value="Employee">Employee (raise &amp; track your own tickets)</option>
+                    <option value="SupportAgent">Support Agent (handle assigned tickets)</option>
+                  </select>
+                </div>
+              </>
+            )}
+
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
+              disabled={submitting}
+              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <LockClosedIcon className="h-5 w-5" />
-              <span>Sign In</span>
+              <span>
+                {submitting
+                  ? (mode === 'login' ? 'Signing In...' : 'Creating Account...')
+                  : (mode === 'login' ? 'Sign In' : 'Create Account')}
+              </span>
             </button>
           </form>
 
-          {!showDemo && (
+          <p className="mt-4 text-center text-sm text-gray-600">
+            {mode === 'login' ? (
+              <>
+                Don&apos;t have an account?{' '}
+                <button
+                  onClick={() => switchMode('register')}
+                  className="text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  Create one
+                </button>
+              </>
+            ) : (
+              <>
+                Already have an account?{' '}
+                <button
+                  onClick={() => switchMode('login')}
+                  className="text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  Sign in
+                </button>
+              </>
+            )}
+          </p>
+
+          {mode === 'login' && !showDemo && (
             <button
               onClick={() => setShowDemo(true)}
               className="mt-4 w-full text-sm text-blue-600 hover:text-blue-800"
