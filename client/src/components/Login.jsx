@@ -59,6 +59,13 @@ export default function Login({ onLogin }) {
               <div className="bg-white rounded p-3 border border-blue-100">
                 <div className="flex items-center justify-between mb-2">
                   <div>
+                    <p className="text-xs font-medium text-gray-500">Please wait after clicking on signin button as the backend deployed on render it may take some time to get activated</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white rounded p-3 border border-blue-100">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
                     <p className="text-xs font-medium text-gray-500">Admin Account</p>
                     <p className="text-sm font-semibold text-gray-900">admin@test.com/123456</p>
                   </div>
