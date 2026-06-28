@@ -12,36 +12,40 @@ https://ticket-flow-three-phi.vercel.app/
 
 ---
 
-## 📸 Features
+# 📸 Screenshots
 
-### Authentication
-- JWT Authentication
-- Secure Login & Registration
-- Protected Routes
-- Persistent Login
-- Role-Based Authorization
+## Login Page
+# 📸 Screenshots
 
-### Employee
-- Create new tickets
-- View personal tickets
-- Edit own tickets
-- Track ticket status
-- Add comments
+## Login Page
 
-### Support Agent
-- View assigned tickets
-- Update ticket status
-- Resolve assigned issues
-- Add comments
+![Login](./client/src/assets/Login.png)
 
-### Admin
-- View all tickets
-- Assign tickets to support agents
-- Update ticket status
-- Manage users
-- Complete dashboard analytics
+> Secure JWT authentication with loading indicator while the Render backend wakes up.
 
 ---
+
+## Admin Dashboard
+
+![Dashboard](./client/src/assets/dashboard.png)
+
+> Dashboard displaying ticket statistics, announcements, quick links, and administrator overview.
+
+---
+
+## Ticket Management
+
+![Tickets](./client/src/assets/tickets.png)
+
+> Search, filter, assign, and manage support tickets with role-based access control.
+
+---
+
+## Ticket Details
+
+![Ticket Details](./client/src/assets/ticket-detail.png)
+
+> Update ticket status, assign support agents, and manage comments from a single interface.
 
 ## 🛠 Tech Stack
 
@@ -73,19 +77,31 @@ https://ticket-flow-three-phi.vercel.app/
 TicketFlow
 │
 ├── client
-│   ├── src
 │   ├── public
-│   └── package.json
+│   ├── src
+│   │   ├── api
+│   │   ├── assets
+│   │   ├── components
+│   │   ├── services
+│   │   ├── utils
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── package.json
+│   └── vite.config.js
 │
 ├── server
+│   ├── config
 │   ├── controllers
 │   ├── middleware
 │   ├── models
 │   ├── routes
-│   ├── config
-│   └── package.json
+│   ├── utils
+│   ├── validators
+│   ├── package.json
+│   └── server.js
 │
-└── README.md
+├── README.md
+└── .gitignore
 ```
 
 ---
@@ -216,10 +232,6 @@ GET /api/users/support-agents
 
 GitHub: https://github.com/ShashwatPathak-01
 
-LinkedIn: https://www.linkedin.com/in/YOUR-LINKEDIN
+LinkedIn: https://www.linkedin.com/in/shashwat-pathak-775680255/
 
 ---
-
-## 📄 License
-
-This project is licensed under the MIT License. whats the issue with this
